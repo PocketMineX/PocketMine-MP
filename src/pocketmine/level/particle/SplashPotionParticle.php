@@ -21,27 +21,22 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\level\particle;
 
-use pocketmine\entity\Living;
+use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\LevelEventPacket;
 
-abstract class Food extends Item implements FoodSource{
-	public function requiresHunger() : bool{
-		return true;
+class SplashPotionParticle extends GenericParticle{
+	public function __construct(Vector3 $pos, int $r = 0, int $g = 0, int $b = 0, int $a = 255){
+		parent::__construct($pos, LevelEventPacket::EVENT_PARTICLE_SPLASH, (($a & 0xff) << 24) | (($r & 0xff) << 16) | (($g & 0xff) << 8) | ($b & 0xff));
 	}
 
-	/**
-	 * @return Item
-	 */
-	public function getResidue(){
-		return ItemFactory::get(Item::AIR, 0, 0);
-	}
+	public function encode(){
+		$pk = new LevelEventPacket();
+		$pk->evid = LevelEventPacket::EVENT_PARTICLE_SPLASH;
+		$pk->position = $this->asVector3();
+		$pk->data = $this->data;
 
-	public function getAdditionalEffects() : array{
-		return [];
-	}
-
-	public function onConsume(Living $consumer){
-
+		return $pk;
 	}
 }
