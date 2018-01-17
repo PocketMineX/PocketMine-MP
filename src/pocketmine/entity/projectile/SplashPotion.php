@@ -30,6 +30,7 @@ use pocketmine\level\Level;
 use pocketmine\level\particle\SplashPotionParticle;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
+use pocketmine\utils\Color;
 
 class SplashPotion extends Throwable{
 	public const NETWORK_ID = self::SPLASH_POTION;
@@ -60,15 +61,25 @@ class SplashPotion extends Throwable{
 		if(!$this->hasSplashed){
 			$this->hasSplashed = true;
 			$effects = Potion::getPotionEffectsById($this->getPotionId());
-			$color = [0, 0, 255];
-			if(!empty($effects)){
-				$color = [$effects[0]->getColor()->getR(), $effects[0]->getColor()->getG(), $effects[0]->getColor()->getB()];
+			$colors = [new Color(0x38, 0x5d, 0xc6)];
+			if(count($effects) > 0){
+				$colors = [];
+				foreach($effects as $effect){
+					for($i = 0; $i < $effect->getEffectLevel(); ++$i){
+						$colors[] = $effect->getColor();
+					}
+				}
 			}
-			$this->getLevel()->addParticle(new SplashPotionParticle($this, $color[0], $color[1], $color[2]));
+			$color = Color::mix(...$colors);
+			$this->getLevel()->addParticle(new SplashPotionParticle($this, $color->getR(), $color->getG(), $color->getB()));
 			$this->getLevel()->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_GLASS);
-			foreach($this->getLevel()->getNearbyEntities($this->getBoundingBox()->grow(5, 5, 5)) as $e){
+			foreach($this->getLevel()->getNearbyEntities($this->getBoundingBox()->grow(4.125, 2.125, 4.125)) as $e){
 				if($e instanceof Living){
-					$modifier = 1 - $this->distance($e) / 5;
+					$distanceSquared = $e->distanceSquared($this);
+					if($distanceSquared > 16){
+						continue;
+					}
+					$modifier = 0.25 * (4 - floor(sqrt($distanceSquared)));
 					foreach($effects as $effect){
 						if($effect->isInstant()){
 							if($modifier <= 0){
@@ -77,7 +88,7 @@ class SplashPotion extends Throwable{
 							$effect->setMultiplier($modifier);
 						}else{
 							$duration = (int) round($effect->getDuration() * $modifier * 0.75);
-							if($duration < 1){
+							if($duration < 20){
 								continue;
 							}
 							$effect->setDuration($duration);
@@ -88,6 +99,7 @@ class SplashPotion extends Throwable{
 			}
 		}
 	}
+
 	public function onCollideWithEntity(Entity $entity){
 		$this->flagForDespawn();
 	}
