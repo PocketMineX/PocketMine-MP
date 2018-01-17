@@ -52,7 +52,7 @@ abstract class ProjectileItem extends Item{
 				$projectile->flagForDespawn();
 			}else{
 				$projectile->spawnToAll();
-				$player->getLevel()->broadcastLevelSoundEvent($player, LevelSoundEventPacket::SOUND_BOW); //TODO: replace this with correct sound
+				$player->getLevel()->broadcastLevelSoundEvent($player, LevelSoundEventPacket::SOUND_THROW, 319); //319 is some mysterious pitch, that made this works
 			}
 		}else{
 			$projectile->spawnToAll();
