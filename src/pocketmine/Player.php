@@ -2448,10 +2448,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						}
 
 						if($ev->getDamage(EntityDamageEvent::MODIFIER_CRITICAL) > 0){
-                                                        $pk = new AnimatePacket();
-                                                        $pk->action = AnimatePacket::ACTION_CRITICAL_HIT;
-                                                        $pk->entityRuntimeId = $target->getId();
-                                                        $this->server->broadcastPacket($target->getViewers(), $pk);
+							$pk = new AnimatePacket();
+							$pk->action = AnimatePacket::ACTION_CRITICAL_HIT;
+							$pk->entityRuntimeId = $target->getId();
+							$this->server->broadcastPacket($target->getViewers(), $pk);
 						}
 
 						if($this->isSurvival()){
