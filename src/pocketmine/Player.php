@@ -80,6 +80,7 @@ use pocketmine\inventory\PlayerInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\inventory\transaction\CraftingTransaction;
 use pocketmine\inventory\transaction\InventoryTransaction;
+use pocketmine\item\Armor;
 use pocketmine\item\Consumable;
 use pocketmine\item\Item;
 use pocketmine\item\WritableBook;
@@ -3704,6 +3705,20 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 
 		return $total;
+	}
+
+	protected function applyArmorDamageModifiers(EntityDamageEvent $source) : void{
+		parent::applyArmorDamageModifiers($source);
+
+		$totalEpf = 0;
+		foreach($this->getInventory()->getArmorContents() as $item){
+			if($item instanceof Armor){
+				$totalEpf += $item->getEnchantmentProtectionFactor($source);
+			}
+		}
+
+		$totalEpf = min(ceil(min($totalEpf, 25) * (mt_rand(50, 100) / 100)), 20);
+		$source->setDamage(-$source->getFinalDamage() * $totalEpf * 0.04, EntityDamageEvent::MODIFIER_ARMOR_ENCHANTMENTS);
 	}
 
 	protected function applyPostDamageEffects(EntityDamageEvent $source) : void{
