@@ -345,9 +345,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	/** @var DataPropertyManager */
 	protected $propertyManager;
 
-	public $passenger = null;
-	public $vehicle = null;
-
 	/** @var Chunk|null */
 	public $chunk;
 
@@ -863,7 +860,14 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		if($this->namedtag->hasTag("CustomName", StringTag::class)){
 			$this->setNameTag($this->namedtag->getString("CustomName"));
-			$this->setNameTagVisible($this->namedtag->getByte("CustomNameVisible", 1) !== 0);
+
+			if($this->namedtag->hasTag("CustomNameVisible", StringTag::class)){
+				//Older versions incorrectly saved this as a string (see 890f72dbf23a77f294169b79590770470041adc4)
+				$this->setNameTagVisible($this->namedtag->getString("CustomNameVisible") !== "");
+				$this->namedtag->removeTag("CustomNameVisible");
+			}else{
+				$this->setNameTagVisible($this->namedtag->getByte("CustomNameVisible", 1) !== 0);
+			}
 		}
 
 		$this->scheduleUpdate();
@@ -976,6 +980,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	public function getAttributeMap(){
 		return $this->attributeMap;
+	}
+
+	public function getDataPropertyManager() : DataPropertyManager{
+		return $this->propertyManager;
 	}
 
 	public function entityBaseTick(int $tickDiff = 1) : bool{
@@ -1668,6 +1676,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 */
 	public function getBlocksAround() : array{
 		if($this->blocksAround === null){
+<<<<<<< HEAD
 			$bb = clone $this->boundingBox;
 			$minX = Math::floorFloat($bb->minX);
 			$minY = Math::floorFloat($bb->minY);
@@ -1675,6 +1684,16 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$maxX = Math::ceilFloat($bb->maxX);
 			$maxY = Math::ceilFloat($bb->maxY);
 			$maxZ = Math::ceilFloat($bb->maxZ);
+=======
+			$inset = 0.001; //Offset against floating-point errors
+
+			$minX = Math::floorFloat($this->boundingBox->minX + $inset);
+			$minY = Math::floorFloat($this->boundingBox->minY + $inset);
+			$minZ = Math::floorFloat($this->boundingBox->minZ + $inset);
+			$maxX = Math::floorFloat($this->boundingBox->maxX - $inset);
+			$maxY = Math::floorFloat($this->boundingBox->maxY - $inset);
+			$maxZ = Math::floorFloat($this->boundingBox->maxZ - $inset);
+>>>>>>> efac23d4aff89db33e45963da18635af53a285c1
 
 			$this->blocksAround = [];
 
